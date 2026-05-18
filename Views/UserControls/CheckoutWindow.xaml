@@ -1,0 +1,81 @@
+﻿<Window x:Class="ToyShop.Views.Customer.CheckoutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Оформление заказа" Height="757" Width="643"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Background="#e1e1e1">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Оформление заказа" FontSize="22" FontWeight="Bold" 
+                   Foreground="#000000" HorizontalAlignment="Center"
+                   Margin="0,0,0,20" Grid.Row="0"/>
+
+        <!-- Выбор адреса -->
+        <Border Grid.Row="1" Background="#d1eefc" CornerRadius="10" Padding="15" Margin="0,0,0,15">
+            <StackPanel>
+                <TextBlock Text="Адрес доставки" FontSize="16" FontWeight="Bold" 
+                           Foreground="#000000" Margin="0,0,0,10"/>
+                <ComboBox x:Name="cbAddress" Height="35" FontSize="14"
+                          DisplayMemberPath="DisplayName" SelectedValuePath="IdAddress"
+                          Background="White" Margin="0,0,0,10"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Добавить адрес" Width="120" Height="30"
+                            Click="BtnAddAddress_Click" Background="#b5d5ca" Foreground="#000000" Cursor="Hand"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Способ оплаты -->
+        <Border Grid.Row="2" Background="#d1eefc" CornerRadius="10" Padding="15" Margin="0,0,0,15">
+            <StackPanel>
+                <TextBlock Text="Способ оплаты" FontSize="16" FontWeight="Bold" 
+                           Foreground="#000000" Margin="0,0,0,10"/>
+                <ComboBox x:Name="cbPayMethod" Height="35" FontSize="14" Background="White">
+                    <ComboBoxItem Content="Наличные при получении"/>
+                    <ComboBoxItem Content="Картой при получении"/>
+                    <ComboBoxItem Content="Картой онлайн"/>
+                </ComboBox>
+            </StackPanel>
+        </Border>
+
+        <!-- Товары в заказе -->
+        <Border Grid.Row="3" Background="#d1eefc" CornerRadius="10" Padding="15" Margin="0,0,0,15">
+            <StackPanel>
+                <TextBlock Text="Состав заказа" FontSize="16" FontWeight="Bold" 
+                           Foreground="#000000" Margin="0,0,0,10"/>
+                <DataGrid x:Name="dgItems" Height="150" AutoGenerateColumns="True" IsReadOnly="True"
+                          FontSize="13" HeadersVisibility="Column"
+                          Background="White" BorderBrush="#b5d5ca" RowHeight="35"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Итоговая сумма -->
+        <Border Grid.Row="4" Background="#b5d5ca" CornerRadius="10" Padding="15" Margin="0,0,0,15">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock Text="Итого к оплате:" FontSize="18" FontWeight="Bold" 
+                           Foreground="#000000" Margin="0,0,15,0"/>
+                <TextBlock x:Name="tbTotal" FontSize="22" FontWeight="Bold" 
+                           Foreground="#000000"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Кнопки -->
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="btnConfirm" Content="Подтвердить заказ" 
+                    Width="150" Height="40" Margin="0,0,10,0"
+                    Click="BtnConfirm_Click" Background="#b5d5ca" Foreground="#000000" Cursor="Hand"/>
+            <Button x:Name="btnCancel" Content="Отмена" 
+                    Width="100" Height="40"
+                    Click="BtnCancel_Click" Background="#e0a9af" Foreground="#000000" Cursor="Hand"/>
+        </StackPanel>
+    </Grid>
+</Window>
