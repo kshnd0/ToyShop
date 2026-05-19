@@ -10,32 +10,22 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            
+            <!-- Только кнопка Редактировать -->
             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                <Button x:Name="btnAdd" Content="Добавить" 
-                        Background="#b5d5ca" Foreground="Black"
-                        Padding="15,8" Margin="0,0,10,0" Cursor="Hand"
-                        Click="BtnAdd_Click"/>
                 <Button x:Name="btnEdit" Content="Редактировать" 
-                        Background="#d1eefc" Foreground="Black"
-                        Padding="15,8" Margin="0,0,10,0" Cursor="Hand"
+                        Style="{StaticResource InfoButton}"
                         Click="BtnEdit_Click"/>
-                <Button x:Name="btnDelete" Content="Удалить" 
-                        Background="#e0a9af" Foreground="Black"
-                        Padding="15,8" Cursor="Hand"
-                        Click="BtnDelete_Click"/>
             </StackPanel>
-
 
             <!-- Поиск -->
             <TextBox x:Name="tbSearch" 
-         Style="{StaticResource SearchTextBox}"
-         Grid.Row="1" 
-         Margin="0,0,0,15"
-         TextChanged="TbSearch_TextChanged"
-         ToolTip="Поиск товаров..."/>
+                     Style="{StaticResource SearchTextBox}"
+                     Grid.Row="1" 
+                     Margin="0,0,0,15"
+                     TextChanged="TbSearch_TextChanged"
+                     ToolTip="Поиск пользователей..."/>
 
-
+            <!-- Карточки пользователей -->
             <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
                 <ItemsControl x:Name="icUsers">
                     <ItemsControl.ItemTemplate>
@@ -45,48 +35,29 @@
                                     BorderBrush="#b5d5ca" BorderThickness="1"
                                     Cursor="Hand" MouseLeftButtonUp="Card_Click" Tag="{Binding IdUser}">
                                 <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
 
-                                    
-                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,15,10">
+                                    <StackPanel>
                                         <TextBlock Text="ФИО" FontSize="11" Foreground="Gray"/>
                                         <TextBlock Text="{Binding FullName}" FontSize="15" FontWeight="Bold" Foreground="Black"/>
-                                    </StackPanel>
 
-                                    
-                                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,15,10">
-                                        <TextBlock Text="Логин" FontSize="11" Foreground="Gray"/>
-                                        <TextBlock Text="{Binding Login}" FontSize="14" Foreground="Black"/>
-                                    </StackPanel>
+                                        <TextBlock Text="Логин" FontSize="11" Foreground="Gray" Margin="0,10,0,0"/>
+                                        <TextBlock Text="{Binding Login}" FontSize="13" Foreground="Black"/>
 
-                                    
-                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,15,10">
-                                        <TextBlock Text="Роль" FontSize="11" Foreground="Gray"/>
-                                        <Border Background="#e1fcd6" Padding="8,3" 
+                                        <TextBlock Text="Email" FontSize="11" Foreground="Gray" Margin="0,10,0,0"/>
+                                        <TextBlock Text="{Binding Email}" FontSize="13" Foreground="Black"/>
+
+                                        <TextBlock Text="Телефон" FontSize="11" Foreground="Gray" Margin="0,10,0,0"/>
+                                        <TextBlock Text="{Binding Number}" FontSize="13" Foreground="Black"/>
+
+                                        <TextBlock Text="Роль" FontSize="11" Foreground="Gray" Margin="0,10,0,0"/>
+                                        <Border Background="#e1fcd6" CornerRadius="10" Padding="8,3" 
                                                 HorizontalAlignment="Left" Margin="0,5,0,0">
                                             <TextBlock Text="{Binding Role}" FontSize="12" FontWeight="Bold"
                                                        Foreground="Black"/>
                                         </Border>
-                                    </StackPanel>
-
-                                    
-                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,15,10">
-                                        <TextBlock Text="Email" FontSize="11" Foreground="Gray"/>
-                                        <TextBlock Text="{Binding Email}" FontSize="13" Foreground="Black"/>
-                                    </StackPanel>
-
-                                    
-                                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,15,10">
-                                        <TextBlock Text="Телефон" FontSize="11" Foreground="Gray"/>
-                                        <TextBlock Text="{Binding Number}" FontSize="13" Foreground="Black"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>

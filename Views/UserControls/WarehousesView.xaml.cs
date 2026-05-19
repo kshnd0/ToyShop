@@ -186,27 +186,53 @@ namespace ToyShop.Views.UserControls
 
             if (saveDialog.ShowDialog() == true)
             {
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
                 using (var package = new ExcelPackage())
                 {
                     var worksheet = package.Workbook.Worksheets.Add("Склады");
-                    var warehouses = _allWarehouses;
 
-                    worksheet.Cells[1, 1].Value = "Код";
-                    worksheet.Cells[1, 2].Value = "Название";
-                    worksheet.Cells[1, 3].Value = "Город";
-                    worksheet.Cells[1, 4].Value = "Улица";
-                    worksheet.Cells[1, 5].Value = "Дом";
+                    
+                    worksheet.Cells[1, 1].Value = "Название";
+                    worksheet.Cells[1, 2].Value = "Город";
+                    worksheet.Cells[1, 3].Value = "Улица";
+                    worksheet.Cells[1, 4].Value = "Дом";
 
-                    for (int i = 0; i < warehouses.Count; i++)
+                   
+                    using (var range = worksheet.Cells[1, 1, 1, 4])
                     {
-                        worksheet.Cells[i + 2, 1].Value = warehouses[i].IdWarehouse;
-                        worksheet.Cells[i + 2, 2].Value = warehouses[i].Name;
-                        worksheet.Cells[i + 2, 3].Value = warehouses[i].City;
-                        worksheet.Cells[i + 2, 4].Value = warehouses[i].Street;
-                        worksheet.Cells[i + 2, 5].Value = warehouses[i].House;
+                        range.Style.Font.Bold = true;
+                        range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                        range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                     }
 
+                    
+                    for (int i = 0; i < _allWarehouses.Count; i++)
+                    {
+                        worksheet.Cells[i + 2, 1].Value = _allWarehouses[i].Name;
+                        worksheet.Cells[i + 2, 2].Value = _allWarehouses[i].City;
+                        worksheet.Cells[i + 2, 3].Value = _allWarehouses[i].Street;
+                        worksheet.Cells[i + 2, 4].Value = _allWarehouses[i].House;
+
+                        
+                        using (var range = worksheet.Cells[i + 2, 1, i + 2, 4])
+                        {
+                            range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                            range.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                            range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                            range.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        }
+                    }
+
+                    
                     worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+
+                   
+                    worksheet.Cells[1, 1, 1, 4].AutoFilter = true;
+
                     package.SaveAs(new FileInfo(saveDialog.FileName));
                 }
 

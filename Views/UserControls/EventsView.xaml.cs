@@ -4,7 +4,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Microsoft.EntityFrameworkCore;
 using ToyShop.Models;
+using System.Threading.Tasks;
 
 namespace ToyShop.Views.UserControls
 {
@@ -14,18 +16,21 @@ namespace ToyShop.Views.UserControls
         private List<EventDisplay> _allEvents;
         private Border _selectedCard;
         private int _selectedEventId = -1;
+        private string _currentUserRole = "Customer";
 
         public class EventDisplay
         {
             public int IdEvent { get; set; }
-            public DateTime? StartDate { get; set; }
-            public DateTime? EndDate { get; set; }
-            public string Meaning { get; set; } = "";
+            public string EventName { get; set; } = "";
+            public DateTime StartDate { get; set; }
+            public DateTime EndDate { get; set; }
+            public string CategoriesInfo { get; set; } = "";
         }
 
-        public EventsView()
+        public EventsView(string userRole = "Customer")
         {
             InitializeComponent();
+            _currentUserRole = userRole;
             _context = new ToyShopContext();
             LoadData();
         }
@@ -39,38 +44,37 @@ namespace ToyShop.Views.UserControls
 
         private void LoadData()
         {
-            try
-            {
-                var events = _context.Events.ToList();
-                _allEvents = events.Select(e => new EventDisplay
-                {
-                    IdEvent = e.IdEvent,
-                    StartDate = e.StartDate,
-                    EndDate = e.EndDate,
-                    Meaning = e.Meaning ?? ""
-                }).ToList();
-                icEvents.ItemsSource = _allEvents;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка загрузки: {ex.Message}");
-            }
-        }
+            var events = _context.Events.ToList();
+            var categoryEvents = _context.CategoryEvents
+                .Include(ce => ce.IdCategoryNavigation)
+                .ToList();
 
-        private void TbSearch_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(tbSearch.Text))
+            _allEvents = new List<EventDisplay>();
+
+            foreach (var ev in events)
             {
-                icEvents.ItemsSource = _allEvents;
-            }
-            else
-            {
-                var search = tbSearch.Text.ToLower();
-                var filtered = _allEvents
-                    .Where(ev => ev.Meaning.ToLower().Contains(search))
+                var relatedCategories = categoryEvents
+                    .Where(ce => ce.IdEvent == ev.IdEvent)
+                    .Select(ce => $"{ce.IdCategoryNavigation?.Name} ({ce.DiscountPercent}%)")
                     .ToList();
-                icEvents.ItemsSource = filtered;
+
+                string categoriesInfo = relatedCategories.Count > 0
+                    ? "Категории: " + string.Join(", ", relatedCategories)
+                    : "Нет категорий";
+
+                var eventDisplay = new EventDisplay
+                {
+                    IdEvent = ev.IdEvent,
+                    EventName = ev.Meaning ?? "Акция",
+                    StartDate = ev.StartDate ?? DateTime.Now,
+                    EndDate = ev.EndDate ?? DateTime.Now,
+                    CategoriesInfo = categoriesInfo
+                };
+
+                _allEvents.Add(eventDisplay);
             }
+
+            icEvents.ItemsSource = _allEvents;
         }
 
         private void Card_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -80,17 +84,14 @@ namespace ToyShop.Views.UserControls
                 var card = sender as Border;
                 if (card == null) return;
 
-                // Получаем ID из тега
                 if (!(card.Tag is int eventId)) return;
 
-                // Снимаем выделение с предыдущей карточки
                 if (_selectedCard != null)
                 {
                     _selectedCard.BorderBrush = new SolidColorBrush(Color.FromRgb(181, 213, 202));
                     _selectedCard.BorderThickness = new Thickness(1);
                 }
 
-                // Выделяем новую карточку
                 card.BorderBrush = new SolidColorBrush(Color.FromRgb(52, 152, 219));
                 card.BorderThickness = new Thickness(2);
                 _selectedCard = card;
@@ -108,92 +109,111 @@ namespace ToyShop.Views.UserControls
             return _allEvents?.FirstOrDefault(e => e.IdEvent == _selectedEventId);
         }
 
-        private void BtnAdd_Click(object sender, RoutedEventArgs e)
+        private async void BtnAdd_Click(object sender, RoutedEventArgs e)
         {
-            try
+            var dialog = new EventAddDialog();
+            if (dialog.ShowDialog() == true)
             {
-                var dialog = new EventDialog();
-                if (dialog.ShowDialog() == true)
+                await Task.Run(() =>
                 {
-                    var eventItem = new Event
+                    Dispatcher.Invoke(() =>
                     {
-                        StartDate = dialog.StartDate,
-                        EndDate = dialog.EndDate,
-                        Meaning = dialog.Meaning
-                    };
-                    _context.Events.Add(eventItem);
-                    _context.SaveChanges();
-                    LoadData();
-                    MessageBox.Show("Акция добавлена!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}");
+                        var newEvent = new Event
+                        {
+                            StartDate = dialog.StartDate,
+                            EndDate = dialog.EndDate,
+                            Meaning = dialog.EventName
+                        };
+                        _context.Events.Add(newEvent);
+                        _context.SaveChanges();
+
+                        foreach (var cat in dialog.SelectedCategories)
+                        {
+                            var categoryEvent = new CategoryEvent
+                            {
+                                IdEvent = newEvent.IdEvent,
+                                IdCategory = cat.IdCategory,
+                                DiscountPercent = cat.DiscountPercent
+                            };
+                            _context.CategoryEvents.Add(categoryEvent);
+                        }
+                        _context.SaveChanges();
+                        LoadData();
+                    });
+                });
+                MessageBox.Show("Акция добавлена!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
-        private void BtnEdit_Click(object sender, RoutedEventArgs e)
+        private async void BtnEdit_Click(object sender, RoutedEventArgs e)
         {
-            try
+            var selected = GetSelectedEvent();
+            if (selected == null)
             {
-                var selected = GetSelectedEvent();
-                if (selected == null)
-                {
-                    MessageBox.Show("Выберите акцию для редактирования!", "Внимание",
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                var eventItem = _context.Events.FirstOrDefault(ev => ev.IdEvent == selected.IdEvent);
-                if (eventItem == null) return;
-
-                var dialog = new EventDialog(eventItem);
-                if (dialog.ShowDialog() == true)
-                {
-                    eventItem.StartDate = dialog.StartDate;
-                    eventItem.EndDate = dialog.EndDate;
-                    eventItem.Meaning = dialog.Meaning;
-
-                    _context.Events.Update(eventItem);
-                    _context.SaveChanges();
-                    LoadData();
-                    MessageBox.Show("Акция обновлена!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
+                MessageBox.Show("Выберите акцию для редактирования!", "Внимание",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
-            catch (Exception ex)
+
+            var eventItem = _context.Events.FirstOrDefault(ev => ev.IdEvent == selected.IdEvent);
+            if (eventItem == null) return;
+
+            var currentCategoryEvents = _context.CategoryEvents
+                .Where(ce => ce.IdEvent == selected.IdEvent)
+                .ToList();
+
+            var dialog = new EventAddDialog(eventItem, currentCategoryEvents);
+            if (dialog.ShowDialog() == true)
             {
-                MessageBox.Show($"Ошибка редактирования: {ex.Message}");
+                eventItem.StartDate = dialog.StartDate;
+                eventItem.EndDate = dialog.EndDate;
+                eventItem.Meaning = dialog.EventName;
+
+                var oldLinks = _context.CategoryEvents.Where(ce => ce.IdEvent == selected.IdEvent);
+                _context.CategoryEvents.RemoveRange(oldLinks);
+
+                foreach (var cat in dialog.SelectedCategories)
+                {
+                    var categoryEvent = new CategoryEvent
+                    {
+                        IdEvent = selected.IdEvent,
+                        IdCategory = cat.IdCategory,
+                        DiscountPercent = cat.DiscountPercent
+                    };
+                    _context.CategoryEvents.Add(categoryEvent);
+                }
+
+                await _context.SaveChangesAsync();
+                LoadData();
+                MessageBox.Show("Акция обновлена!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
         private void BtnDelete_Click(object sender, RoutedEventArgs e)
         {
-            try
+            var selected = GetSelectedEvent();
+            if (selected == null)
             {
-                var selected = GetSelectedEvent();
-                if (selected == null)
-                {
-                    MessageBox.Show("Выберите акцию для удаления!", "Внимание",
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
+                MessageBox.Show("Выберите акцию для удаления!", "Внимание",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (MessageBox.Show($"Удалить акцию \"{selected.EventName}\"?", "Подтверждение",
+                MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
+                var links = _context.CategoryEvents.Where(ce => ce.IdEvent == selected.IdEvent);
+                _context.CategoryEvents.RemoveRange(links);
 
                 var eventItem = _context.Events.FirstOrDefault(ev => ev.IdEvent == selected.IdEvent);
-                if (eventItem == null) return;
-
-                if (MessageBox.Show($"Удалить акцию \"{selected.Meaning}\"?", "Подтверждение",
-                    MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                if (eventItem != null)
                 {
                     _context.Events.Remove(eventItem);
-                    _context.SaveChanges();
-                    LoadData();
-                    MessageBox.Show("Акция удалена!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка удаления: {ex.Message}");
+
+                _context.SaveChanges();
+                LoadData();
+                MessageBox.Show("Акция удалена!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
     }

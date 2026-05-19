@@ -2,7 +2,10 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup />
   <ItemGroup>
-    <Compile Update="Views\CartWindow.xaml.cs">
+    <Compile Update="Views\Dialogs\EventAddDialog.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\UserControls\CartWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Views\Dialogs\AddressDialog.xaml.cs">
@@ -23,16 +26,13 @@
     <Compile Update="Views\UserControls\EmployeesView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\Dialogs\EventDialog.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\UserControls\EventsView.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Update="Views\Dialogs\InputDialog.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Views\Dialogs\OrderDialog.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\UserControls\EventsView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Views\UserControls\OrdersView.xaml.cs">

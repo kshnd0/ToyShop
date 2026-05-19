@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using Microsoft.EntityFrameworkCore;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -94,6 +95,33 @@ namespace ToyShop.Views.UserControls
             }
         }
 
+        private int GetProductDiscount(int categoryId)
+        {
+            var today = DateTime.Now.Date;
+
+            try
+            {
+                var activeDiscount = _context.CategoryEvents
+                    .Include(ce => ce.IdEventNavigation)
+                    .Where(ce => ce.IdCategory == categoryId)
+                    .Where(ce => ce.IdEventNavigation.StartDate <= today && ce.IdEventNavigation.EndDate >= today)
+                    .Select(ce => ce.DiscountPercent)
+                    .FirstOrDefault();
+
+                return (int)activeDiscount;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        private decimal GetDiscountedPrice(decimal originalPrice, int discountPercent)
+        {
+            if (discountPercent <= 0) return originalPrice;
+            return originalPrice - (originalPrice * discountPercent / 100);
+        }
+
         private Border CreateProductCard(Product product)
         {
             var border = new Border
@@ -142,16 +170,64 @@ namespace ToyShop.Views.UserControls
             };
             stackPanel.Children.Add(nameText);
 
-            var costText = new TextBlock
+            int discountPercent = GetProductDiscount(product.IdCategory);
+            decimal discountedPrice = GetDiscountedPrice(product.Cost, discountPercent);
+            bool hasDiscount = discountPercent > 0;
+
+            if (hasDiscount)
             {
-                Text = $"{Math.Round(product.Cost, 2)} руб.",
-                FontSize = 16,
-                FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(Color.FromRgb(181, 213, 202)),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 5, 0, 0)
-            };
-            stackPanel.Children.Add(costText);
+                var oldPriceText = new TextBlock
+                {
+                    Text = $"{product.Cost:F2} руб.",
+                    FontSize = 12,
+                    Foreground = new SolidColorBrush(Colors.Gray),
+                    TextDecorations = TextDecorations.Strikethrough,
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
+                stackPanel.Children.Add(oldPriceText);
+
+                var newPriceText = new TextBlock
+                {
+                    Text = $"{discountedPrice:F2} руб.",
+                    FontSize = 16,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(220, 53, 69)),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 2, 0, 0)
+                };
+                stackPanel.Children.Add(newPriceText);
+
+                var discountBadge = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromRgb(220, 53, 69)),
+                    CornerRadius = new CornerRadius(10),
+                    Padding = new Thickness(8, 3, 8, 3),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 5, 0, 0)
+                };
+                var discountText = new TextBlock
+                {
+                    Text = $"-{discountPercent}%",
+                    FontSize = 11,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Colors.White)
+                };
+                discountBadge.Child = discountText;
+                stackPanel.Children.Add(discountBadge);
+            }
+            else
+            {
+                var costText = new TextBlock
+                {
+                    Text = $"{Math.Round(product.Cost, 2)} руб.",
+                    FontSize = 16,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(181, 213, 202)),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 5, 0, 0)
+                };
+                stackPanel.Children.Add(costText);
+            }
 
             var manufacturerText = new TextBlock
             {
@@ -360,20 +436,45 @@ namespace ToyShop.Views.UserControls
                 {
                     var worksheet = package.Workbook.Worksheets.Add("Товары");
 
-                    worksheet.Cells[1, 1].Value = "ID";
-                    worksheet.Cells[1, 2].Value = "Название";
-                    worksheet.Cells[1, 3].Value = "Цена";
-                    worksheet.Cells[1, 4].Value = "Производитель";
+                   
+                    worksheet.Cells[1, 1].Value = "Название";
+                    worksheet.Cells[1, 2].Value = "Цена";
+                    worksheet.Cells[1, 3].Value = "Производитель";
 
-                    for (int i = 0; i < _allProducts.Count; i++)
+                    using (var range = worksheet.Cells[1, 1, 1, 3])
                     {
-                        worksheet.Cells[i + 2, 1].Value = _allProducts[i].IdProduct;
-                        worksheet.Cells[i + 2, 2].Value = _allProducts[i].Name;
-                        worksheet.Cells[i + 2, 3].Value = Math.Round(_allProducts[i].Cost, 2);
-                        worksheet.Cells[i + 2, 4].Value = _allProducts[i].Manufacturer;
+                        range.Style.Font.Bold = true;
+                        range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                        range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                     }
 
+                    
+                    for (int i = 0; i < _allProducts.Count; i++)
+                    {
+                        worksheet.Cells[i + 2, 1].Value = _allProducts[i].Name;
+                        worksheet.Cells[i + 2, 2].Value = Math.Round(_allProducts[i].Cost, 2);
+                        worksheet.Cells[i + 2, 3].Value = _allProducts[i].Manufacturer;
+
+                       
+                        using (var range = worksheet.Cells[i + 2, 1, i + 2, 3])
+                        {
+                            range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                            range.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                            range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                            range.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        }
+                    }
+
+                    
                     worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+
+                    
+                    worksheet.Cells[1, 1, 1, 3].AutoFilter = true;
+
                     package.SaveAs(new FileInfo(saveDialog.FileName));
                 }
 

@@ -265,6 +265,10 @@
                 </Border>
             </TabItem>
 
+            <TabItem x:Name="tabEvents" Header="Акции">
+                <ContentControl x:Name="EventsContentControl"/>
+            </TabItem>
+
         </TabControl>
 
         

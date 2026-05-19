@@ -94,7 +94,7 @@ namespace ToyShop.Views.UserControls
 
             var stackPanel = new StackPanel();
 
-            // КАРТИНКА КАТЕГОРИИ (рабочий путь)
+           
             var image = new Image
             {
                 Width = 80,
@@ -124,7 +124,7 @@ namespace ToyShop.Views.UserControls
             }
             stackPanel.Children.Add(image);
 
-            // НАЗВАНИЕ КАТЕГОРИИ
+            
             var nameText = new TextBlock
             {
                 Text = category.Name,
@@ -137,16 +137,9 @@ namespace ToyShop.Views.UserControls
             };
             stackPanel.Children.Add(nameText);
 
-            // КОЛИЧЕСТВО ТОВАРОВ
-            var countText = new TextBlock
-            {
-                Text = $"{_context.Products.Count(p => p.IdCategory == category.IdCategory)} товаров",
-                FontSize = 11,
-                Foreground = new SolidColorBrush(Colors.Gray),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 8, 0, 0)
-            };
-            stackPanel.Children.Add(countText);
+           
+           
+     
 
             border.Child = stackPanel;
             return border;

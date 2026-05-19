@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Windows;
 using ToyShop.Models;
-
 using ToyShop.Views.Customer;
 using ToyShop.Views.UserControls;
 
@@ -13,6 +12,7 @@ namespace ToyShop.Views.Main
         private CategoriesView _categoriesView;
         private ProductsView _productsView;
         private OrdersView _ordersView;
+        private EventsView _eventsView;
         private AddressesView _addressesView;
         private EmployeesView _employeesView;
         private ProvidersView _providersView;
@@ -31,36 +31,36 @@ namespace ToyShop.Views.Main
             _categoriesView = new CategoriesView();
             _productsView = new ProductsView(currentUser.IdUser, currentUser.Role);
             _ordersView = new OrdersView(currentUser.IdUser, currentUser.Role);
+            _eventsView = new EventsView(currentUser.Role);
             _addressesView = new AddressesView(currentUser.IdUser);
+            _eventsView = new EventsView(currentUser.Role);
             _employeesView = new EmployeesView();
             _providersView = new ProvidersView();
             _warehousesView = new WarehousesView();
             _stockView = new StockView();
             _usersView = new UsersView();
 
-            // ПОДПИСКА НА СОБЫТИЕ ВЫБОРА КАТЕГОРИИ
             _categoriesView.CategorySelected += CategoriesView_CategorySelected;
 
             CategoriesContentControl.Content = _categoriesView;
             ProductsContentControl.Content = _productsView;
             OrdersContentControl.Content = _ordersView;
+            EventsContentControl.Content = _eventsView;
             AddressesContentControl.Content = _addressesView;
             EmployeesContentControl.Content = _employeesView;
             ProvidersContentControl.Content = _providersView;
             WarehousesContentControl.Content = _warehousesView;
             StockContentControl.Content = _stockView;
             UsersContentControl.Content = _usersView;
+            EventsContentControl.Content = _eventsView;
 
             ConfigureTabsByRole();
         }
 
-        // ОБРАБОТЧИК ВЫБОРА КАТЕГОРИИ
         private void CategoriesView_CategorySelected(object sender, int categoryId)
         {
-            // Переключаемся на вкладку "Товары"
             MainTab.SelectedItem = tabProducts;
 
-            // Фильтруем товары по выбранной категории
             if (ProductsContentControl.Content is ProductsView productsView)
             {
                 productsView.FilterByCategory(categoryId);
@@ -79,59 +79,80 @@ namespace ToyShop.Views.Main
 
         private void ConfigureTabsByRole()
         {
-            // Скрываем всё кроме категорий, товаров, заказов и главной
+            // Скрываем всё, кроме главной
             tabEmployee.Visibility = Visibility.Collapsed;
             tabProvider.Visibility = Visibility.Collapsed;
             tabWarehouse.Visibility = Visibility.Collapsed;
             tabStock.Visibility = Visibility.Collapsed;
             tabUser.Visibility = Visibility.Collapsed;
             tabAddresses.Visibility = Visibility.Collapsed;
+            tabEvents.Visibility = Visibility.Collapsed;
             btnCart.Visibility = Visibility.Collapsed;
 
             if (currentUser.Role == "Admin")
             {
-                // Админ видит всё (кроме акций)
                 tabEmployee.Visibility = Visibility.Visible;
                 tabProvider.Visibility = Visibility.Visible;
                 tabWarehouse.Visibility = Visibility.Visible;
                 tabStock.Visibility = Visibility.Visible;
                 tabUser.Visibility = Visibility.Visible;
+                tabEvents.Visibility = Visibility.Visible;
                 tabAddresses.Visibility = Visibility.Collapsed;
                 btnCart.Visibility = Visibility.Collapsed;
 
                 _categoriesView.SetButtonsVisibility(Visibility.Visible);
                 _productsView.SetButtonsVisibility(Visibility.Visible);
                 _ordersView.SetButtonsVisibility(Visibility.Visible);
+
+                if (_eventsView != null)
+                {
+                    _eventsView.SetButtonsVisibility(Visibility.Visible);
+                }
+
+                if (_usersView != null)
+                {
+                    _usersView.SetButtonsVisibility(Visibility.Visible);
+                }
             }
             else if (currentUser.Role == "Manager")
             {
-                // Менеджер видит только категории, товары, заказы
                 tabEmployee.Visibility = Visibility.Collapsed;
                 tabProvider.Visibility = Visibility.Collapsed;
                 tabWarehouse.Visibility = Visibility.Collapsed;
                 tabStock.Visibility = Visibility.Collapsed;
                 tabUser.Visibility = Visibility.Collapsed;
+                tabEvents.Visibility = Visibility.Visible;
                 tabAddresses.Visibility = Visibility.Collapsed;
                 btnCart.Visibility = Visibility.Collapsed;
 
                 _categoriesView.SetButtonsVisibility(Visibility.Visible);
                 _productsView.SetButtonsVisibility(Visibility.Visible);
                 _ordersView.SetButtonsVisibility(Visibility.Visible);
+
+                if (_eventsView != null)
+                {
+                    _eventsView.SetButtonsVisibility(Visibility.Collapsed);
+                }
             }
             else if (currentUser.Role == "Customer")
             {
-                // Покупатель видит только категории, товары, свои заказы, адреса и корзину
                 tabEmployee.Visibility = Visibility.Collapsed;
                 tabProvider.Visibility = Visibility.Collapsed;
                 tabWarehouse.Visibility = Visibility.Collapsed;
                 tabStock.Visibility = Visibility.Collapsed;
                 tabUser.Visibility = Visibility.Collapsed;
+                tabEvents.Visibility = Visibility.Visible;
                 tabAddresses.Visibility = Visibility.Visible;
                 btnCart.Visibility = Visibility.Visible;
 
                 _categoriesView.SetButtonsVisibility(Visibility.Collapsed);
                 _productsView.SetButtonsVisibility(Visibility.Collapsed);
                 _ordersView.SetButtonsVisibility(Visibility.Collapsed);
+
+                if (_eventsView != null)
+                {
+                    _eventsView.SetButtonsVisibility(Visibility.Collapsed);
+                }
             }
         }
 

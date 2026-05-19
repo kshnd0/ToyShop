@@ -87,16 +87,16 @@ namespace ToyShop.Views.Customer
             }
         }
 
-        private int GetTotalProductStock(int productId) //проверка наличия товара(подсчитывает общее кол-во на всех складах)
+        private int GetTotalProductStock(int productId) 
         {
             return _context.WarehouseProducts
                 .Where(wp => wp.IdProduct == productId)
                 .Sum(wp => wp.Amount);
         }
 
-        private bool DeductProductStock(int productId, int requestedQuantity, int mainWarehouseId)
+        private bool DeductProductStock(int productId, int requestedQuantity, int mainWarehouseId) 
         {
-            //получаем остатки товара
+            
             var stockItems = _context.WarehouseProducts
                 .Where(wp => wp.IdProduct == productId && wp.Amount > 0)
                 .OrderBy(wp => wp.IdWarehouse == mainWarehouseId ? 0 : 1)
@@ -104,24 +104,24 @@ namespace ToyShop.Views.Customer
                 .ToList();
 
             int remainingToDeduct = requestedQuantity;
-            //проходим по всем складам
+           
             foreach (var stock in stockItems)
             {
-                if (remainingToDeduct <= 0) break; //все списали, выходим
-                //берется минимум из (сколько есть на складе, сколько нужно)
+                if (remainingToDeduct <= 0) break; 
+               
                 int deductAmount = Math.Min(stock.Amount, remainingToDeduct);
-                stock.Amount -= deductAmount; //уменьшаем остаток на складе
-                remainingToDeduct -= deductAmount; //уменьшаем сколько еще нужно 
+                stock.Amount -= deductAmount; 
+                remainingToDeduct -= deductAmount; 
             }
 
-            //если не хватило товара
+           
             if (remainingToDeduct > 0)
             {
-                return false; //не удалось списать 
+                return false; 
             }
 
-            _context.SaveChanges(); //сохраняем изменения в бд
-            return true; //все списали успешно
+            _context.SaveChanges(); 
+            return true; 
         }
 
         private async void BtnConfirm_Click(object sender, RoutedEventArgs e)

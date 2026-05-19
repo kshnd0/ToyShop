@@ -1,17 +1,12 @@
 ﻿<Window x:Class="ToyShop.Views.UserControls.UserDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Пользователь" Height="580" Width="450"
+        Title="Редактирование пользователя" Height="450" Width="450"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
-        Background="#e1e1e1"
-        Icon="/Images/logo.png">
+        Background="#e1e1e1">
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -25,67 +20,42 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <TextBlock Grid.Row="0" Grid.Column="0" Text="Имя:" 
+        <!-- Телефон -->
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="Телефон:" 
                    FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,10"
                    Foreground="#000000"/>
-        <TextBox x:Name="tbName" Grid.Row="0" Grid.Column="1" Height="35" Margin="0,0,0,10"
+        <TextBox x:Name="tbNumber" Grid.Row="0" Grid.Column="1" Height="35" Margin="0,0,0,10"
                  Background="White" BorderBrush="#b5d5ca" BorderThickness="1"/>
 
-        <TextBlock Grid.Row="1" Grid.Column="0" Text="Фамилия:" 
+        <!-- Email -->
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="Email:" 
                    FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,10"
                    Foreground="#000000"/>
-        <TextBox x:Name="tbLastname" Grid.Row="1" Grid.Column="1" Height="35" Margin="0,0,0,10"
+        <TextBox x:Name="tbEmail" Grid.Row="1" Grid.Column="1" Height="35" Margin="0,0,0,10"
                  Background="White" BorderBrush="#b5d5ca" BorderThickness="1"/>
 
-        <TextBlock Grid.Row="2" Grid.Column="0" Text="Отчество:" 
+        <!-- Роль -->
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="Роль:" 
                    FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,10"
                    Foreground="#000000"/>
-        <TextBox x:Name="tbPatronymic" Grid.Row="2" Grid.Column="1" Height="35" Margin="0,0,0,10"
-                 Background="White" BorderBrush="#b5d5ca" BorderThickness="1"/>
-
-        <TextBlock Grid.Row="3" Grid.Column="0" Text="Логин:" 
-                   FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,10"
-                   Foreground="#000000"/>
-        <TextBox x:Name="tbLogin" Grid.Row="3" Grid.Column="1" Height="35" Margin="0,0,0,10"
-                 Background="White" BorderBrush="#b5d5ca" BorderThickness="1"/>
-
-        <TextBlock Grid.Row="4" Grid.Column="0" Text="Пароль:" 
-                   FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,10"
-                   Foreground="#000000"/>
-        <PasswordBox x:Name="pbPassword" Grid.Row="4" Grid.Column="1" Height="35" Margin="0,0,0,10"
-                     Background="White" BorderBrush="#b5d5ca" BorderThickness="1"/>
-
-        <TextBlock Grid.Row="5" Grid.Column="0" Text="Телефон:" 
-                   FontSize="14" FontWeight="Bold" VerticalAlignment="Top" Margin="0,8,10,0"
-                   Foreground="#000000"/>
-        <StackPanel Grid.Row="5" Grid.Column="1" Margin="0,0,0,10">
-            <TextBox x:Name="tbNumber" Height="35" Margin="0,0,0,5"
-                     Background="White" BorderBrush="#b5d5ca" BorderThickness="1"/>
-            <TextBlock Text="Формат: 8-999-999-99-99" 
-                       FontSize="11" Foreground="#7F8C8D" Margin="5,0,0,0"/>
-        </StackPanel>
-
-        <TextBlock Grid.Row="6" Grid.Column="0" Text="Email:" 
-                   FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,10"
-                   Foreground="#000000"/>
-        <TextBox x:Name="tbEmail" Grid.Row="6" Grid.Column="1" Height="35" Margin="0,0,0,10"
-                 Background="White" BorderBrush="#b5d5ca" BorderThickness="1"/>
-
-        <TextBlock Grid.Row="7" Grid.Column="0" Text="Роль:" 
-                   FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,10"
-                   Foreground="#000000"/>
-        <ComboBox x:Name="cbRole" Grid.Row="7" Grid.Column="1" Height="35" Margin="0,0,0,20"
+        <ComboBox x:Name="cbRole" Grid.Row="2" Grid.Column="1" Height="35" Margin="0,0,0,20"
                   Background="#d1eefc">
             <ComboBoxItem Content="Admin"/>
             <ComboBoxItem Content="Manager"/>
             <ComboBoxItem Content="Customer"/>
         </ComboBox>
 
-        <StackPanel Grid.Row="8" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+        <!-- Кнопки -->
+        <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="OK" Width="80" Height="35" Margin="0,0,10,0"
                     Click="BtnOk_Click" Background="#b5d5ca" Foreground="#000000"/>
             <Button Content="Отмена" Width="80" Height="35"
                     Click="BtnCancel_Click" Background="#e0a9af" Foreground="#000000"/>
         </StackPanel>
+
+        <!-- Подсказка о телефоне -->
+        <TextBlock Grid.Row="4" Grid.ColumnSpan="2" 
+                   Text="Формат телефона: 8-XXX-XXX-XX-XX" 
+                   FontSize="11" Foreground="Gray" HorizontalAlignment="Center" Margin="0,10,0,0"/>
     </Grid>
 </Window>

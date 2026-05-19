@@ -36,9 +36,7 @@ namespace ToyShop.Views.UserControls
 
         public void SetButtonsVisibility(Visibility visibility)
         {
-            btnAdd.Visibility = visibility;
             btnEdit.Visibility = visibility;
-            btnDelete.Visibility = visibility;
         }
 
         private void LoadData()
@@ -90,17 +88,14 @@ namespace ToyShop.Views.UserControls
                 var card = sender as Border;
                 if (card == null) return;
 
-                
                 if (!(card.Tag is int userId)) return;
 
-                
                 if (_selectedCard != null)
                 {
                     _selectedCard.BorderBrush = new SolidColorBrush(Color.FromRgb(181, 213, 202));
                     _selectedCard.BorderThickness = new Thickness(1);
                 }
 
-                
                 card.BorderBrush = new SolidColorBrush(Color.FromRgb(52, 152, 219));
                 card.BorderThickness = new Thickness(2);
                 _selectedCard = card;
@@ -118,102 +113,31 @@ namespace ToyShop.Views.UserControls
             return _allUsers?.FirstOrDefault(u => u.IdUser == _selectedUserId);
         }
 
-        private void BtnAdd_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var dialog = new UserDialog();
-                if (dialog.ShowDialog() == true)
-                {
-                    var user = new User
-                    {
-                        Name = dialog.Name,
-                        Lastname = dialog.Lastname,
-                        Patronymic = dialog.Patronymic,
-                        Login = dialog.Login,
-                        Password = dialog.Password,
-                        Number = dialog.Number,
-                        Email = dialog.Email,
-                        Role = dialog.Role
-                    };
-                    _context.Users.Add(user);
-                    _context.SaveChanges();
-                    LoadData();
-                    MessageBox.Show("Пользователь добавлен!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}");
-            }
-        }
-
+        // Кнопка редактирования (только изменение телефона, email и роли)
         private void BtnEdit_Click(object sender, RoutedEventArgs e)
         {
-            try
+            var selected = GetSelectedUser();
+            if (selected == null)
             {
-                var selected = GetSelectedUser();
-                if (selected == null)
-                {
-                    MessageBox.Show("Выберите пользователя для редактирования!", "Внимание",
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                var user = _context.Users.FirstOrDefault(u => u.IdUser == selected.IdUser);
-                if (user == null) return;
-
-                var dialog = new UserDialog(user);
-                if (dialog.ShowDialog() == true)
-                {
-                    user.Name = dialog.Name;
-                    user.Lastname = dialog.Lastname;
-                    user.Patronymic = dialog.Patronymic;
-                    user.Login = dialog.Login;
-                    user.Password = dialog.Password;
-                    user.Number = dialog.Number;
-                    user.Email = dialog.Email;
-                    user.Role = dialog.Role;
-
-                    _context.Users.Update(user);
-                    _context.SaveChanges();
-                    LoadData();
-                    MessageBox.Show("Пользователь обновлён!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
+                MessageBox.Show("Выберите пользователя для редактирования!", "Внимание",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
-            catch (System.Exception ex)
-            {
-                MessageBox.Show($"Ошибка редактирования: {ex.Message}");
-            }
-        }
 
-        private void BtnDelete_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var selected = GetSelectedUser();
-                if (selected == null)
-                {
-                    MessageBox.Show("Выберите пользователя для удаления!", "Внимание",
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
+            var user = _context.Users.FirstOrDefault(u => u.IdUser == selected.IdUser);
+            if (user == null) return;
 
-                var user = _context.Users.FirstOrDefault(u => u.IdUser == selected.IdUser);
-                if (user == null) return;
-
-                if (MessageBox.Show($"Удалить пользователя {selected.FullName}?", "Подтверждение",
-                    MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
-                {
-                    _context.Users.Remove(user);
-                    _context.SaveChanges();
-                    LoadData();
-                    MessageBox.Show("Пользователь удалён!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-            }
-            catch (System.Exception ex)
+            var dialog = new UserDialog(user);
+            if (dialog.ShowDialog() == true)
             {
-                MessageBox.Show($"Ошибка удаления: {ex.Message}");
+                user.Number = dialog.Number;
+                user.Email = dialog.Email;
+                user.Role = dialog.Role;
+
+                _context.Users.Update(user);
+                _context.SaveChanges();
+                LoadData();
+                MessageBox.Show("Пользователь обновлён!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
     }
